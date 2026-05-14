@@ -1,0 +1,31 @@
+name: YouTube 4K VP9 Downloader
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'لینک ویدیو یوتیوب'
+        required: true
+        default: 'https://www.youtube.com/watch?v=F7sGJVUrkjQ'
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install yt-dlp and ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install -U yt-dlp
+
+      - name: Download Video (4K VP9)
+        run: |
+          yt-dlp -v \
+            -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio" \
+            --merge-output-format webm \
+            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded" \
+            --no-warnings \
+            "${{ github.event.inputs.url }}"
