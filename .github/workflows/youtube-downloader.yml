@@ -521,7 +521,7 @@ jobs:
             echo "[fallback] ytmp3.gg API"
             local type="$2"
             local val="$3"
-            FORMAT="webm"
+            FORMAT="m4u"
             QUALITY="2160p"
             if [ "$type" = "a" ]; then
               FORMAT="m3u8"
