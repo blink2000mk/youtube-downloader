@@ -742,7 +742,7 @@ jobs:
             [ -f "$f" ] || continue
             dir=$(dirname "$f")
             base=$(basename "$f")
-            newbase=$(echo "$base" | sed 's/[^a-zA-Z0-9._-()]/_/g' | sed 's/__*/_/g')
+            newbase=$(echo "$base" | perl -pe 's/[^a-zA-Z0-9._-()]/_/g' | perl -pe 's/__*/_/g')
             if [ "$base" != "$newbase" ]; then
               echo "   ✏️  Renaming: $base → $newbase"
               mv -v "$f" "$dir/$newbase"
