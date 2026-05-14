@@ -1,10 +1,10 @@
-name: YouTube 4K Downloader
+name: YouTube 4K VP9 Downloader
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'لینک ویدیو'
+        description: 'لینک ویدیو یوتیوب'
         required: true
         default: 'https://www.youtube.com/watch?v=F7sGJVUrkjQ'
 
@@ -14,20 +14,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install yt-dlp
-        run: pip install -U yt-dlp
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install -U yt-dlp
+          curl -fsSL https://deno.land/install.sh | sh
 
-      - name: Put Cookies
+      - name: Save Cookies
         run: |
           cat > cookies.txt << 'EOF'
           ${{ secrets.YOUTUBE_COOKIES }}
           EOF
 
+      - name: List Available Formats (برای چک)
+        run: |
+          yt-dlp --cookies cookies.txt --list-formats "${{ github.event.inputs.url }}"
+
       - name: Download 4K VP9
         run: |
           yt-dlp -v \
-            -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio/bestvideo[height<=2160]+bestaudio" \
-            --merge-output-format webm \
             --cookies cookies.txt \
-            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator" \
+            -f "313+251/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio/best" \
+            --merge-output-format webm \
+            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded,web_music" \
+            --js-runtimes deno \
+            --no-warnings \
             "${{ github.event.inputs.url }}"
