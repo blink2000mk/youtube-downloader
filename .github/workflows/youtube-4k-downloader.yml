@@ -12,25 +12,24 @@ jobs:
   download:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install yt-dlp and ffmpeg
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          pip install -U yt-dlp
+      - name: Setup yt-dlp with Cookies
+        uses: AnimMouse/setup-yt-dlp@v3
+        with:
+          yt-dlp-version: latest
 
-      - name: Save Cookies
-        run: |
-          echo "${{ secrets.YOUTUBE_COOKIES }}" > cookies.txt
+      - name: Setup YouTube Cookies
+        uses: AnimMouse/setup-yt-dlp/cookies@v3
+        with:
+          cookies: ${{ secrets.YOUTUBE_COOKIES }}
 
-      - name: Download 4K VP9
+      - name: Download 4K VP9 + Best Audio
         run: |
           yt-dlp -v \
             -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio" \
             --merge-output-format webm \
-            --cookies cookies.txt \
-            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded" \
+            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded,web_music" \
             --no-warnings \
             "${{ github.event.inputs.url }}"
