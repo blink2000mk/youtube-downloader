@@ -1,10 +1,10 @@
-name: YouTube 4K VP9 Downloader
+name: YouTube 4K Downloader
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'لینک ویدیو یوتیوب'
+        description: 'لینک ویدیو'
         required: true
         default: 'https://www.youtube.com/watch?v=F7sGJVUrkjQ'
 
@@ -12,24 +12,22 @@ jobs:
   download:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup yt-dlp with Cookies
-        uses: AnimMouse/setup-yt-dlp@v3
-        with:
-          yt-dlp-version: latest
+      - name: Install yt-dlp
+        run: pip install -U yt-dlp
 
-      - name: Setup YouTube Cookies
-        uses: AnimMouse/setup-yt-dlp/cookies@v3
-        with:
-          cookies: ${{ secrets.YOUTUBE_COOKIES }}
+      - name: Put Cookies
+        run: |
+          cat > cookies.txt << 'EOF'
+          ${{ secrets.YOUTUBE_COOKIES }}
+          EOF
 
-      - name: Download 4K VP9 + Best Audio
+      - name: Download 4K VP9
         run: |
           yt-dlp -v \
-            -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio" \
+            -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio/bestvideo[height<=2160]+bestaudio" \
             --merge-output-format webm \
-            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded,web_music" \
-            --no-warnings \
+            --cookies cookies.txt \
+            --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator" \
             "${{ github.event.inputs.url }}"
