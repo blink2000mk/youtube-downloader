@@ -292,7 +292,7 @@ jobs:
               if yt-dlp $COOKIE_ARGS $EXTRACTOR_ARGS \
                 -f "313+251" --merge-output-format webm \
                 --js-runtimes deno --remote-components ejs:npm --no-progress \
-                -o "$OUTPUT_FOLDER/%(title)s-313+251.webm" "$link"; then
+                -o "$OUTPUT_FOLDER/%(title)s-(4k_HD).webm" "$link"; then
                 echo "   ✅ Video download success"
               else
                 echo "   ❌ Primary download failed – queued for fallback"
@@ -742,7 +742,7 @@ jobs:
             [ -f "$f" ] || continue
             dir=$(dirname "$f")
             base=$(basename "$f")
-            newbase=$(echo "$base" | sed 's/[^a-zA-Z0-9._-]/_/g' | sed 's/__*/_/g')
+            newbase=$(echo "$base" | sed 's/[^a-zA-Z0-9._-()]/_/g' | sed 's/__*/_/g')
             if [ "$base" != "$newbase" ]; then
               echo "   ✏️  Renaming: $base → $newbase"
               mv -v "$f" "$dir/$newbase"
