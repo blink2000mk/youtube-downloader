@@ -643,6 +643,9 @@ jobs:
             echo "   🌐 Downloading via ytmp3.gg: $FILENAME"
             curl -L --fail --progress-bar --retry 3 --retry-delay 5 \
                  -o "$OUTPUT_FOLDER/$FILENAME" "$DL_URL"
+                 echo "   📊 File info:"
+            file "$OUTPUT_FOLDER/$FILENAME"
+            ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 "$OUTPUT_FOLDER/$FILENAME" 2>/dev/null || echo "   ⚠️ No format info"
           
             rm -f "$tmp_info"
           
