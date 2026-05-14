@@ -279,9 +279,9 @@ jobs:
             if [ "$type" = "a" ]; then
               echo "   🎵 Downloading audio (format: ba[format_note*=original]/ba)"
               if yt-dlp $COOKIE_ARGS $EXTRACTOR_ARGS \
-                -f "ba[format_note*=original]/ba" \
+                -f "251" --recode-video webm \
                 --js-runtimes deno --remote-components ejs:npm --no-progress \
-                -o "$OUTPUT_FOLDER/%(title)s-${val}kbps.%(ext)s" "$link"; then
+                -o "$OUTPUT_FOLDER/%(title)s-251.opus" "$link"; then
                 echo "   ✅ Audio download success"
               else
                 echo "   ❌ Primary download failed – queued for fallback"
@@ -290,9 +290,9 @@ jobs:
             else
               echo "   📹 Downloading video (format: bv[height<=$val]+(ba[format_note*=original]/ba))"
               if yt-dlp $COOKIE_ARGS $EXTRACTOR_ARGS \
-                -f "bv[height<=$val]+(ba[format_note*=original]/ba)" \
+                -f "313+251" --merge-output-format webm \
                 --js-runtimes deno --remote-components ejs:npm --no-progress \
-                -o "$OUTPUT_FOLDER/%(title)s-${val}p.%(ext)s" "$link"; then
+                -o "$OUTPUT_FOLDER/%(title)s-313+251.webm" "$link"; then
                 echo "   ✅ Video download success"
               else
                 echo "   ❌ Primary download failed – queued for fallback"
@@ -486,9 +486,9 @@ jobs:
             local suf=$(build_suffix "$2" "$3")
             local fmt
             if [ "$2" = "a" ]; then
-              fmt="ba[format_note*=original]/ba"
+              fmt="251"
             else
-              fmt="bv[height<=$3]+(ba[format_note*=original]/ba)"
+              fmt="313+251"
             fi
             yt-dlp \
               --extractor-args "youtube:player_client=web_music,web,tv" \
@@ -504,9 +504,9 @@ jobs:
             local suf=$(build_suffix "$2" "$3")
             local fmt
             if [ "$2" = "a" ]; then
-              fmt="ba[format_note*=original]/ba"
+              fmt="251"
             else
-              fmt="bv[height<=$3]+(ba[format_note*=original]/ba)"
+              fmt="313+251"
             fi
             yt-dlp --force-ipv4 --retries 10 --fragment-retries 10 \
               --cookies youtube-cookies.txt \
@@ -659,9 +659,9 @@ jobs:
             local suf=$(build_suffix "$2" "$3")
             local fmt
             if [ "$2" = "a" ]; then
-              fmt="ba[format_note*=original]/ba"
+              fmt="251"
             else
-              fmt="bv[height<=$3]+(ba[format_note*=original]/ba)"
+              fmt="313+251"
             fi
             yt-dlp \
               --extractor-args "youtube:player_client=web_music,web,tv,web_embedded" \
