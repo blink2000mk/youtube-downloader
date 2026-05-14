@@ -521,10 +521,10 @@ jobs:
             echo "[fallback] ytmp3.gg API"
             local type="$2"
             local val="$3"
-            FORMAT="mp4"
-            QUALITY="720p"
+            FORMAT="webm"
+            QUALITY="2160p"
             if [ "$type" = "a" ]; then
-              FORMAT="mp3"
+              FORMAT="m3u8"
               QUALITY="${val:-320}kbps"
             else
               QUALITY="${val:-2160}p"
@@ -542,7 +542,7 @@ jobs:
           FMT = os.environ.get('FB_FMT')
           QUAL = os.environ.get('FB_QUAL')
           TMP_INFO = os.environ.get('TMP_INFO')
-          is_audio = FMT == 'mp3'
+          is_audio = FMT == 'm3u8'
           
           # Quality normalization – now supports all common YouTube resolutions
           VALID_VIDEO_QUAL = ('360p','480p','720p','1080p','1440p','2160p')
