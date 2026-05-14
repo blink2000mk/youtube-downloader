@@ -14,12 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install tools
+      - name: Install yt-dlp + ffmpeg + Deno
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           pip install -U yt-dlp
-          curl -fsSL https://deno.land/install.sh | sh
+          curl -fsSL https://deno.land/install.sh | sh -s -- --yes
+          echo "$HOME/.deno/bin" >> $GITHUB_PATH
 
       - name: Save Cookies
         run: |
@@ -27,15 +28,11 @@ jobs:
           ${{ secrets.YOUTUBE_COOKIES }}
           EOF
 
-      - name: List Available Formats (برای چک)
-        run: |
-          yt-dlp --cookies cookies.txt --list-formats "${{ github.event.inputs.url }}"
-
       - name: Download 4K VP9
         run: |
           yt-dlp -v \
             --cookies cookies.txt \
-            -f "313+251/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio/best" \
+            -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio/best" \
             --merge-output-format webm \
             --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded,web_music" \
             --js-runtimes deno \
