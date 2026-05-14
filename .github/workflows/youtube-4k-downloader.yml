@@ -21,11 +21,16 @@ jobs:
           sudo apt-get install -y ffmpeg
           pip install -U yt-dlp
 
-      - name: Download Video (4K VP9)
+      - name: Save Cookies
+        run: |
+          echo "${{ secrets.YOUTUBE_COOKIES }}" > cookies.txt
+
+      - name: Download 4K VP9
         run: |
           yt-dlp -v \
             -f "313+251/313+bestaudio/bestvideo[height=2160][vcodec^=vp09]+bestaudio[acodec^=opus]/bestvideo[height<=2160]+bestaudio" \
             --merge-output-format webm \
+            --cookies cookies.txt \
             --extractor-args "youtube:player_client=web_safari,web,ios,android,web_creator,web_embedded" \
             --no-warnings \
             "${{ github.event.inputs.url }}"
