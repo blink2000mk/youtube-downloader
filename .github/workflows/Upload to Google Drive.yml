@@ -1,4 +1,4 @@
-name: Upload to Google Drive
+name: Upload to Google Drive with rclone mount
 
 on:
   workflow_dispatch:
@@ -14,10 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install rclone
-        run: sudo apt-get update && sudo apt-get install -y rclone
+      - name: Install rclone and fuse
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rclone fuse
 
-      - name: Configure Google Drive (Fixed)
+      - name: Configure rclone
         run: |
           mkdir -p ~/.config/rclone
           cat > ~/.config/rclone/rclone.conf << EOF
@@ -29,15 +31,15 @@ jobs:
           token = {"access_token":"dummy","token_type":"Bearer","refresh_token":"${{ secrets.GDRIVE_REFRESH_TOKEN }}","expiry":"2099-12-31T23:59:59Z"}
           EOF
 
-      - name: Test Connection & Upload
+      - name: Mount Google Drive and Copy files
         run: |
-          echo "🔄 تست اتصال به Google Drive..."
-          rclone about gdrive: || echo "اتصال ناموفق"
-
-          echo "📤 در حال آپلود..."
-          rclone mkdir gdrive:YouTube-Downloads 2>/dev/null || true
+          mkdir -p ~/gdrive_mount
+          rclone mount gdrive: ~/gdrive_mount --daemon --vfs-cache-mode writes --dir-cache-time 5m --vfs-read-chunk-size 32M &
+          sleep 8
           
-          rclone copy youtube gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 6 --verbose || true
-          rclone copy leecher-content gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 6 --verbose || true
+          echo "📤 در حال کپی فایل‌ها..."
+          cp -r youtube/* ~/gdrive_mount/YouTube-Downloads/ 2>/dev/null || true
+          cp -r leecher-content/* ~/gdrive_mount/YouTube-Downloads/ 2>/dev/null || true
           
-          echo "✅ عملیات آپلود تمام شد!"
+          echo "✅ کپی انجام شد"
+          fusermount -u ~/gdrive_mount 2>/dev/null || true
