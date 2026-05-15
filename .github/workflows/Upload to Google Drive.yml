@@ -17,7 +17,7 @@ jobs:
       - name: Install rclone
         run: sudo apt-get update && sudo apt-get install -y rclone
 
-      - name: Configure Google Drive
+      - name: Configure Google Drive (Fixed)
         run: |
           mkdir -p ~/.config/rclone
           cat > ~/.config/rclone/rclone.conf << EOF
@@ -26,12 +26,18 @@ jobs:
           client_id = 440335527099-k2k1tkmh5cbvmpnuj02b0iiqnr118ce7.apps.googleusercontent.com
           client_secret = ${{ secrets.GDRIVE_CLIENT_SECRET }}
           scope = drive.file
-          token = {"access_token":"dummy","token_type":"Bearer","refresh_token":"${{ secrets.GDRIVE_REFRESH_TOKEN }}","expiry":"2026-12-31T00:00:00Z"}
+          token = {"access_token":"dummy","token_type":"Bearer","refresh_token":"${{ secrets.GDRIVE_REFRESH_TOKEN }}","expiry":"2099-12-31T23:59:59Z"}
           EOF
 
-      - name: Upload to Google Drive
+      - name: Test Connection & Upload
         run: |
+          echo "🔄 تست اتصال به Google Drive..."
+          rclone about gdrive: || echo "اتصال ناموفق"
+
+          echo "📤 در حال آپلود..."
           rclone mkdir gdrive:YouTube-Downloads 2>/dev/null || true
-          rclone copy youtube gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 8 --verbose || true
-          rclone copy leecher-content gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 8 --verbose || true
-          echo "✅ آپلود با موفقیت انجام شد!"
+          
+          rclone copy youtube gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 6 --verbose || true
+          rclone copy leecher-content gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 6 --verbose || true
+          
+          echo "✅ عملیات آپلود تمام شد!"
