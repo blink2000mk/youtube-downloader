@@ -1,34 +1,37 @@
 name: Upload to Google Drive
+
 on:
   workflow_dispatch:
-    inputs:
-      folder_id:
-        description: 'Google Drive Folder ID'
-        required: true
+  workflow_run:
+    workflows: ["youtube-downloader.yml"]
+    types:
+      - completed
+
 jobs:
   upload:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup gdrive
-        run: |
-          wget -O gdrive https://docs.gdrive3rdparty.com/gdrive-linux-x64
-          chmod +x gdrive
-          sudo mv gdrive /usr/local/bin/
+      - name: Install rclone
+        run: sudo apt-get update && sudo apt-get install -y rclone
 
-      - name: Authenticate and Upload
-        env:
-          GDRIVE_AUTH_TOKEN: ${{ secrets.GDRIVE_AUTH_TOKEN }}
+      - name: Configure Google Drive
         run: |
-          if [ -z "$GDRIVE_AUTH_TOKEN" ]; then
-            echo "No auth token found, attempting initial setup..."
-            # این دستور لینکی را چاپ می‌کند. شما باید آن را در مرورگر باز کنید.
-            gdrive about
-          else
-            echo "$GDRIVE_AUTH_TOKEN" > token.json
-            gdrive about --config ./
-          fi
-          # آپلود فایل‌های پوشه youtube
-          gdrive upload --recursive --parent ${{ github.event.inputs.folder_id }} youtube/
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf << EOF
+          [gdrive]
+          type = drive
+          client_id = 440335527099-k2k1tkmh5cbvmpnuj02b0iiqnr118ce7.apps.googleusercontent.com
+          client_secret = ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          scope = drive.file
+          token = {"access_token":"dummy","token_type":"Bearer","refresh_token":"${{ secrets.GDRIVE_REFRESH_TOKEN }}","expiry":"2026-12-31T00:00:00Z"}
+          EOF
+
+      - name: Upload to Google Drive
+        run: |
+          rclone mkdir gdrive:YouTube-Downloads 2>/dev/null || true
+          rclone copy youtube gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 8 --verbose || true
+          rclone copy leecher-content gdrive:YouTube-Downloads/ --create-empty-src-dirs --transfers 8 --verbose || true
+          echo "✅ آپلود با موفقیت انجام شد!"
